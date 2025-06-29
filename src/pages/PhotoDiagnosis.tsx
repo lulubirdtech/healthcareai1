@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useDropzone } from 'react-dropzone';
+import { aiService } from '../services/aiService';
+import { useShopping } from '../contexts/ShoppingContext';
+import ShoppingCart from '../components/ShoppingCart';
 import { 
   Camera, 
   X, 
@@ -12,7 +15,8 @@ import {
   Leaf,
   Pill,
   Activity,
-  ShoppingCart
+  ShoppingCart as CartIcon,
+  Play
 } from 'lucide-react';
 
 const PhotoDiagnosis: React.FC = () => {
@@ -21,6 +25,10 @@ const PhotoDiagnosis: React.FC = () => {
   const [diagnosis, setDiagnosis] = useState<Record<string, unknown> | null>(null);
   const [selectedBodyPart, setSelectedBodyPart] = useState('');
   const [imageType, setImageType] = useState('');
+  const [showCart, setShowCart] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const { addToCart, cartItems } = useShopping();
 
   const bodyParts = [
     'Skin/Rash', 'Eyes', 'Mouth/Throat', 'Hands/Feet', 'Arms/Legs', 'Face', 'Back', 'Chest', 'Abdomen', 'Other'
@@ -50,98 +58,99 @@ const PhotoDiagnosis: React.FC = () => {
     if (uploadedImages.length === 0) return;
 
     setIsAnalyzing(true);
+    setError(null);
     
-    // Check if API keys are configured
-    const hasApiKey = localStorage.getItem('gemini_api_key') || localStorage.getItem('openai_api_key');
-    
-    if (hasApiKey) {
-      // TODO: Implement real AI analysis with configured API keys
-      // For now, simulate real analysis with more detailed response
-      setTimeout(() => {
-        const realDiagnosis = {
-          condition: 'Contact Dermatitis',
-          confidence: 78,
-          description: 'Based on the image analysis using advanced AI vision models, this appears to be contact dermatitis, likely caused by an allergic reaction or irritant exposure.',
-          severity: 'mild',
-          anomalyDetected: true,
-          naturalRemedies: [
-            'Apply cool, wet compresses for 15-20 minutes several times daily',
-            'Use aloe vera gel (pure, without additives) 3-4 times daily',
-            'Take oatmeal baths - blend oats and add to lukewarm bath water',
-            'Apply coconut oil (organic, cold-pressed) to moisturize',
-            'Use chamomile tea compresses - brew strong tea, cool, and apply'
-          ],
-          foods: [
-            'Anti-inflammatory foods: turmeric, ginger, leafy greens',
-            'Omega-3 rich foods: walnuts, flaxseeds, chia seeds',
-            'Vitamin C foods: citrus fruits, berries, bell peppers',
-            'Avoid: dairy, processed foods, sugar, alcohol temporarily',
-            'Drink plenty of water to help flush toxins'
-          ],
-          medications: [
-            'Antihistamine (Benadryl) 25mg every 6 hours for itching',
-            'Hydrocortisone cream 1% - apply thin layer twice daily',
-            'Calamine lotion for drying effect if blisters present'
-          ],
-          exercises: [
-            'Gentle stretching to improve circulation',
-            'Light walking to boost immune system',
-            'Avoid strenuous exercise until healed',
-            'Practice stress-reduction techniques (meditation, deep breathing)'
-          ],
-          administration: [
-            'Clean affected area gently with mild soap before applying treatments',
-            'Pat dry, don\'t rub the skin',
-            'Apply remedies with clean hands or cotton pads',
-            'Avoid scratching - keep nails short',
-            'Wear loose, breathable clothing over affected area'
-          ],
-          prevention: [
-            'Identify and avoid the trigger (soap, detergent, plant, etc.)',
-            'Use hypoallergenic products',
-            'Wear gloves when cleaning or gardening',
-            'Patch test new products before full use'
-          ],
-          warning: 'Seek medical attention if the rash spreads rapidly, develops pus, you have fever, or if symptoms don\'t improve within 1 week.',
-          treatmentPlan: {
-            phase1: 'Immediate relief (Days 1-3)',
-            phase2: 'Healing phase (Days 4-7)',
-            phase3: 'Recovery and prevention (Week 2+)'
-          }
-        };
-        
-        setDiagnosis(realDiagnosis);
-        setIsAnalyzing(false);
-      }, 4000);
-    } else {
-      // Use demo content if no API keys configured
-      setTimeout(() => {
-        const mockDiagnosis = {
-          condition: 'Contact Dermatitis (Demo)',
-          confidence: 78,
-          description: 'Demo analysis - Configure API keys in Settings to get real AI-powered diagnosis.',
-          severity: 'mild',
-          anomalyDetected: true,
-          naturalRemedies: [
-            'Apply cool, wet compresses for 15-20 minutes several times daily',
-            'Use aloe vera gel (pure, without additives) 3-4 times daily',
-            'Take oatmeal baths - blend oats and add to lukewarm bath water'
-          ],
-          foods: [
-            'Anti-inflammatory foods: turmeric, ginger, leafy greens',
-            'Omega-3 rich foods: walnuts, flaxseeds, chia seeds'
-          ],
-          medications: [
-            'Antihistamine (Benadryl) 25mg every 6 hours for itching',
-            'Hydrocortisone cream 1% - apply thin layer twice daily'
-          ],
-          warning: 'This is demo content. Configure API keys in Settings for real AI analysis.'
-        };
-        
-        setDiagnosis(mockDiagnosis);
-        setIsAnalyzing(false);
-      }, 3000);
+    try {
+      if (aiService.isConfigured()) {
+        // Convert image to base64 for AI analysis
+        const imageData = await convertImageToBase64(uploadedImages[0]);
+        const result = await aiService.analyzePhoto(imageData, imageType, selectedBodyPart);
+        setDiagnosis(result);
+      } else {
+        // Demo content
+        setTimeout(() => {
+          const mockDiagnosis = {
+            condition: 'Contact Dermatitis (Demo)',
+            confidence: 78,
+            description: 'Demo analysis - Configure API keys in Settings to get real AI-powered diagnosis.',
+            severity: 'mild',
+            anomalyDetected: true,
+            naturalRemedies: [
+              'Apply cool, wet compresses for 15-20 minutes several times daily',
+              'Use aloe vera gel (pure, without additives) 3-4 times daily',
+              'Take oatmeal baths - blend oats and add to lukewarm bath water'
+            ],
+            foods: [
+              'Anti-inflammatory foods: turmeric, ginger, leafy greens',
+              'Omega-3 rich foods: walnuts, flaxseeds, chia seeds'
+            ],
+            medications: [
+              'Antihistamine (Benadryl) 25mg every 6 hours for itching',
+              'Hydrocortisone cream 1% - apply thin layer twice daily'
+            ],
+            exercises: [
+              'Gentle stretching to improve circulation',
+              'Light walking to boost immune system'
+            ],
+            administration: [
+              'Clean affected area gently with mild soap',
+              'Pat dry, don\'t rub the skin'
+            ],
+            prevention: [
+              'Identify and avoid triggers',
+              'Use hypoallergenic products'
+            ],
+            warning: 'This is demo content. Configure API keys in Settings for real AI analysis.',
+            treatmentPlan: {
+              phase1: 'Immediate relief (Days 1-3)',
+              phase2: 'Healing phase (Days 4-7)',
+              phase3: 'Recovery and prevention (Week 2+)'
+            }
+          };
+          
+          setDiagnosis(mockDiagnosis);
+          setIsAnalyzing(false);
+        }, 3000);
+      }
+    } catch (error: unknown) {
+      console.error('Photo analysis failed:', error);
+      setError(error instanceof Error ? error.message : 'Analysis failed. Please try again.');
+    } finally {
+      setIsAnalyzing(false);
     }
+  };
+
+  const convertImageToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleAddRecommendedItems = () => {
+    if (!diagnosis) return;
+
+    const items = aiService.extractShoppingItems(diagnosis);
+    items.forEach(item => addToCart(item));
+    setShowCart(true);
+  };
+
+  const handleBuyMedicines = () => {
+    if (!diagnosis) return;
+    
+    const medicineItems = aiService.extractShoppingItems(diagnosis).filter(item => item.type === 'medicine');
+    medicineItems.forEach(item => addToCart(item));
+    setShowCart(true);
+  };
+
+  const handleOrderFoods = () => {
+    if (!diagnosis) return;
+    
+    const foodItems = aiService.extractShoppingItems(diagnosis).filter(item => item.type === 'food');
+    foodItems.forEach(item => addToCart(item));
+    setShowCart(true);
   };
 
   return (
@@ -151,8 +160,32 @@ const PhotoDiagnosis: React.FC = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <h1 className="text-3xl font-bold text-gray-800 mb-2">AI Photo Diagnosis</h1>
-        <p className="text-gray-600">Upload medical images for AI-powered visual diagnosis and comprehensive treatment recommendations.</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-800 mb-2">AI Photo Diagnosis</h1>
+            <p className="text-gray-600">Upload medical images for AI-powered visual diagnosis and comprehensive treatment recommendations.</p>
+            {!aiService.isConfigured() && (
+              <div className="mt-2 p-3 bg-yellow-100 border border-yellow-300 rounded-lg">
+                <p className="text-sm text-yellow-800">
+                  <strong>Demo Mode:</strong> Configure API keys in Settings → AI Configuration for real AI analysis.
+                </p>
+              </div>
+            )}
+          </div>
+          
+          {/* Shopping Cart Button */}
+          <button
+            onClick={() => setShowCart(true)}
+            className="relative bg-gradient-to-r from-medical-primary to-medical-secondary text-white p-3 rounded-xl hover:shadow-lg transition-all duration-200"
+          >
+            <CartIcon className="h-6 w-6" />
+            {cartItems.length > 0 && (
+              <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                {cartItems.length}
+              </span>
+            )}
+          </button>
+        </div>
       </motion.div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -248,6 +281,12 @@ const PhotoDiagnosis: React.FC = () => {
                 ))}
               </div>
 
+              {error && (
+                <div className="mt-4 p-3 bg-red-100 border-2 border-red-300 rounded-xl">
+                  <p className="text-sm text-red-700">{error}</p>
+                </div>
+              )}
+
               <button
                 onClick={handleAnalyze}
                 disabled={isAnalyzing || uploadedImages.length === 0}
@@ -255,7 +294,7 @@ const PhotoDiagnosis: React.FC = () => {
               >
                 {isAnalyzing ? (
                   <>
-                    <Loader className="animate-spin h-4 w-4 mr-2" />
+                    <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full mr-2"></div>
                     Analyzing Images...
                   </>
                 ) : (
@@ -411,14 +450,20 @@ const PhotoDiagnosis: React.FC = () => {
               {/* E-commerce Integration */}
               <div className="bg-gradient-to-r from-purple-100 to-pink-100 rounded-xl p-4 border-2 border-purple-300">
                 <h3 className="font-semibold text-gray-800 mb-3 flex items-center">
-                  <ShoppingCart className="h-5 w-5 mr-2 text-purple-600" />
+                  <CartIcon className="h-5 w-5 mr-2 text-purple-600" />
                   Purchase Recommended Items
                 </h3>
                 <div className="grid grid-cols-2 gap-3">
-                  <button className="bg-purple-200 hover:bg-purple-300 border-2 border-purple-400 text-purple-800 py-2 px-4 rounded-lg transition-colors text-sm font-medium">
+                  <button 
+                    onClick={handleBuyMedicines}
+                    className="bg-purple-200 hover:bg-purple-300 border-2 border-purple-400 text-purple-800 py-2 px-4 rounded-lg transition-colors text-sm font-medium"
+                  >
                     Buy Medicines
                   </button>
-                  <button className="bg-green-200 hover:bg-green-300 border-2 border-green-400 text-green-800 py-2 px-4 rounded-lg transition-colors text-sm font-medium">
+                  <button 
+                    onClick={handleOrderFoods}
+                    className="bg-green-200 hover:bg-green-300 border-2 border-green-400 text-green-800 py-2 px-4 rounded-lg transition-colors text-sm font-medium"
+                  >
                     Order Foods
                   </button>
                 </div>
@@ -426,10 +471,21 @@ const PhotoDiagnosis: React.FC = () => {
 
               {/* Start Treatment Button */}
               <div className="flex space-x-3">
-                <button className="flex-1 bg-gradient-to-r from-medical-primary to-medical-secondary text-white py-3 px-4 rounded-xl font-medium hover:shadow-green-glow transform hover:scale-[1.02] transition-all duration-200">
+                <button 
+                  onClick={handleAddRecommendedItems}
+                  className="flex-1 bg-gradient-to-r from-green-600 to-green-700 text-white py-3 px-4 rounded-xl font-medium hover:shadow-lg transform hover:scale-[1.02] transition-all duration-200 flex items-center justify-center"
+                >
+                  <CartIcon className="h-4 w-4 mr-2" />
+                  Add All to Cart
+                </button>
+                <button className="flex-1 bg-gradient-to-r from-medical-primary to-medical-secondary text-white py-3 px-4 rounded-xl font-medium hover:shadow-green-glow transform hover:scale-[1.02] transition-all duration-200 flex items-center justify-center">
+                  <Play className="h-4 w-4 mr-2" />
                   Start Treatment Plan
                 </button>
-                <button className="flex-1 bg-white/70 hover:bg-white/90 border-2 border-medical-primary/30 text-gray-800 py-3 px-4 rounded-xl font-medium transition-colors">
+              </div>
+              <div className="flex space-x-3">
+                <button className="flex-1 bg-white/70 hover:bg-white/90 border-2 border-medical-primary/30 text-gray-800 py-3 px-4 rounded-xl font-medium transition-colors flex items-center justify-center">
+                  <Eye className="h-4 w-4 mr-2" />
                   View Full Details
                 </button>
               </div>
@@ -437,6 +493,9 @@ const PhotoDiagnosis: React.FC = () => {
           )}
         </motion.div>
       </div>
+
+      {/* Shopping Cart */}
+      <ShoppingCart isOpen={showCart} onClose={() => setShowCart(false)} />
     </div>
   );
 };

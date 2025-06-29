@@ -79,11 +79,11 @@ const Dashboard: React.FC = () => {
 
   const quickActions = [
     {
-      title: 'Check Symptoms',
+      title: 'Start Consultation',
       description: 'Describe your symptoms for AI analysis',
       icon: Stethoscope,
       color: 'from-green-500 to-emerald-600',
-      href: '/symptoms'
+      href: '/consultation'
     },
     {
       title: 'Photo Diagnosis',

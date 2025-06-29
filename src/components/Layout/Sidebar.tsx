@@ -20,7 +20,7 @@ interface SidebarProps {
 
 const navigation = [
   { name: 'Dashboard', href: '/', icon: LayoutDashboard },
-  { name: 'Symptom Checker', href: '/symptoms', icon: Stethoscope },
+  { name: 'Start Consultation', href: '/consultation', icon: Stethoscope },
   { name: 'Photo Diagnosis', href: '/photo-diagnosis', icon: Camera },
   { name: 'Treatment Plans', href: '/treatments', icon: Pill },
   { name: 'Health Education', href: '/education', icon: BookOpen },
