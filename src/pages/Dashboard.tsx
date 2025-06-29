@@ -159,19 +159,23 @@ const Dashboard: React.FC = () => {
         <h2 className="text-xl font-semibold text-gray-800 mb-6">How can I help you today?</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {quickActions.map((action, index) => (
-            <motion.button
+            <motion.div
               key={action.title}
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.3, delay: index * 0.1 }}
-              className="p-6 rounded-xl bg-white/50 hover:bg-white/70 transition-all duration-200 text-left border-2 border-white/30 hover:border-medical-primary/30 group hover:shadow-green-glow"
             >
-              <div className={`p-3 rounded-lg bg-gradient-to-r ${action.color} w-fit mb-4 group-hover:scale-110 transition-transform`}>
-                <action.icon className="h-6 w-6 text-white" />
-              </div>
-              <h3 className="font-semibold text-gray-800 mb-2">{action.title}</h3>
-              <p className="text-sm text-gray-600">{action.description}</p>
-            </motion.button>
+              <Link
+                to={action.href}
+                className="block p-6 rounded-xl bg-white/50 hover:bg-white/70 transition-all duration-200 text-left border-2 border-white/30 hover:border-medical-primary/30 group hover:shadow-green-glow"
+              >
+                <div className={`p-3 rounded-lg bg-gradient-to-r ${action.color} w-fit mb-4 group-hover:scale-110 transition-transform`}>
+                  <action.icon className="h-6 w-6 text-white" />
+                </div>
+                <h3 className="font-semibold text-gray-800 mb-2">{action.title}</h3>
+                <p className="text-sm text-gray-600">{action.description}</p>
+              </Link>
+            </motion.div>
           ))}
         </div>
       </motion.div>
