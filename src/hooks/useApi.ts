@@ -8,7 +8,7 @@ export function useApi<T>(
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const memoizedApiCall = useCallback(() => apiCall(), dependencies);
+  const memoizedApiCall = useCallback(() => apiCall(), [apiCall, ...dependencies]);
 
   useEffect(() => {
     let isMounted = true;

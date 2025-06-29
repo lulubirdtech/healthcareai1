@@ -34,10 +34,10 @@ export class VectorSearchService {
         ...analyses.map(analysis => ({
           type: 'analysis',
           id: analysis._id,
-          description: `${(analysis.dicomFileId as any).modality || 'Medical'} analysis with ${analysis.findings.length} findings`,
+          description: `${(analysis.dicomFileId as Record<string, unknown>).modality as string || 'Medical'} analysis with ${analysis.findings.length} findings`,
           findings: analysis.findings,
           confidence: analysis.confidence,
-          modality: (analysis.dicomFileId as any).modality || 'Unknown'
+          modality: (analysis.dicomFileId as Record<string, unknown>).modality as string || 'Unknown'
         })),
         ...reports.map(report => ({
           type: 'report',

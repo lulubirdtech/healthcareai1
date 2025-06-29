@@ -32,8 +32,8 @@ router.post('/generate', auth, async (req, res) => {
     const report = new Report({
       analysisId,
       userId: req.user!.userId,
-      patientId: (analysis.dicomFileId as any).patientId || 'Unknown',
-      title: `${(analysis.dicomFileId as any).modality || 'Medical'} Analysis Report`,
+      patientId: (analysis.dicomFileId as Record<string, unknown>).patientId as string || 'Unknown',
+      title: `${(analysis.dicomFileId as Record<string, unknown>).modality as string || 'Medical'} Analysis Report`,
       content: reportContent,
       template,
       status: 'draft',
