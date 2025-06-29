@@ -6,7 +6,7 @@ import Dashboard from './pages/Dashboard';
 import SymptomChecker from './pages/SymptomChecker';
 import PhotoDiagnosis from './pages/PhotoDiagnosis';
 import TreatmentPlans from './pages/TreatmentPlans';
-import StartConsultation from './pages/StartConsultation';
+import StartConsultation from './pages/StartConsultation.tsx';
 import HealthEducation from './pages/HealthEducation';
 import EmergencyGuide from './pages/EmergencyGuide';
 import Settings from './pages/Settings';
