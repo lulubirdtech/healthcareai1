@@ -86,7 +86,7 @@ class AIService {
   }
 
   async generateSymptomDiagnosis(symptoms: string, bodyParts: string[], severity: string, duration: string): Promise<Record<string, unknown>> {
-    const provider = localStorage.getItem('ai_provider') || 'gemini';
+    const provider = localStorage.getItem('ai_provider') || 'openai';
     
     const prompt = `
 As a medical AI assistant, analyze the following symptoms and provide a comprehensive diagnosis and treatment plan:
@@ -141,7 +141,7 @@ Format the response as a JSON object with the following structure:
   }
 
   async generateTreatmentPlan(condition: string, severity: string): Promise<Record<string, unknown>> {
-    const provider = localStorage.getItem('ai_provider') || 'gemini';
+    const provider = localStorage.getItem('ai_provider') || 'openai';
     
     const prompt = `
 Create a comprehensive treatment plan for: ${condition} (${severity} severity)
@@ -196,7 +196,7 @@ Format as JSON:
   }
 
   async generateHealthArticle(topic: string): Promise<Record<string, unknown>> {
-    const provider = localStorage.getItem('ai_provider') || 'gemini';
+    const provider = localStorage.getItem('ai_provider') || 'openai';
     
     const prompt = `
 Write a comprehensive health education article about: ${topic}
