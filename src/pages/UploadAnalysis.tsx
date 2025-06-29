@@ -250,11 +250,10 @@ const UploadAnalysis: React.FC = () => {
                 </p>
               </div>
 
-              {analysisResults.findings && analysisResults.findings.length > 0 && (
+              {analysisResults.findings && (analysisResults.findings as Array<Record<string, unknown>>).length > 0 && (
                 <div>
                   <h3 className="font-semibold text-medical-dark mb-3">Detected Findings</h3>
                   <div className="space-y-3">
-                    {analysisResults.findings.map((finding: any, index: number) => (
                     {(analysisResults.findings as Array<Record<string, unknown>>).map((finding: Record<string, unknown>, index: number) => (
                       <div
                         key={index}
