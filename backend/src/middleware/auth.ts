@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
 interface AuthRequest extends Request {
+  headers: Request['headers'];
   user?: {
     userId: string;
     email: string;
@@ -9,26 +10,26 @@ interface AuthRequest extends Request {
   };
 }
 
-export const auth = (req: AuthRequest, res: Response, next: NextFunction) => {
+export const auth = (req: AuthRequest, res: Response<any, Record<string, any>>, next: NextFunction) => {
   try {
-    const token = req.header('Authorization')?.replace('Bearer ', '');
+    const token = req.headers['authorization']?.replace('Bearer ', '');
     
     if (!token) {
-      return res.status(401).json({ message: 'Access denied. No token provided.' });
+      return (res as any).status(401).json({ message: 'Access denied. No token provided.' });
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret') as any;
     req.user = decoded;
     next();
   } catch (error) {
-    res.status(401).json({ message: 'Invalid token.' });
+    (res as any).status(401).json({ message: 'Invalid token.' });
   }
 };
 
 export const requireRole = (roles: string[]) => {
-  return (req: AuthRequest, res: Response, next: NextFunction) => {
+  return (req: AuthRequest, res: Response<any, Record<string, any>>, next: NextFunction) => {
     if (!req.user || !roles.includes(req.user.role)) {
-      return res.status(403).json({ message: 'Access denied. Insufficient permissions.' });
+      return (res as any).status(403).json({ message: 'Access denied. Insufficient permissions.' });
     }
     next();
   };
