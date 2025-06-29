@@ -38,7 +38,7 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error: unknown) => {
-    console.error('API Error:', error.response?.data || error.message);
+    console.error('API Error:', (error as { response?: { data?: unknown } }).response?.data || (error as Error).message);
     
     // Handle network errors specifically
     if ((error as { code?: string }).code === 'ERR_NETWORK' || (error as Error).message === 'Network Error') {
@@ -76,8 +76,8 @@ export class ApiService {
     try {
       const response = await api.post('/auth/register', { email, password, name });
       return response.data;
-    } catch (error: any) {
-      if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
+    } catch (error: unknown) {
+      if ((error as { code?: string }).code === 'ERR_NETWORK' || (error as Error).message === 'Network Error') {
         throw new Error('Unable to connect to server. Please ensure the backend is running and access the frontend via HTTP: http://localhost:5173');
       }
       throw error;

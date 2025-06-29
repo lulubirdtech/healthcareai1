@@ -16,26 +16,31 @@ interface AuthRequest extends Request {
   };
 }
 
+interface AuthResponse extends Response {
+  status(code: number): AuthResponse;
+  json(obj: Record<string, unknown>): AuthResponse;
+}
+
 export const auth = (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const token = req.headers['authorization']?.replace('Bearer ', '');
     
     if (!token) {
-      return (res as any).status(401).json({ message: 'Access denied. No token provided.' });
+      return (res as AuthResponse).status(401).json({ message: 'Access denied. No token provided.' });
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret') as JWTPayload;
     req.user = decoded;
     next();
   } catch {
-    (res as any).status(401).json({ message: 'Invalid token.' });
+    (res as AuthResponse).status(401).json({ message: 'Invalid token.' });
   }
 };
 
 export const requireRole = (roles: string[]): ((req: AuthRequest, res: Response, next: NextFunction) => void) => {
   return (req: AuthRequest, res: Response, next: NextFunction) => {
     if (!req.user || !roles.includes(req.user.role)) {
-      return (res as any).status(403).json({ message: 'Access denied. Insufficient permissions.' });
+      return (res as AuthResponse).status(403).json({ message: 'Access denied. Insufficient permissions.' });
     }
     next();
   };
