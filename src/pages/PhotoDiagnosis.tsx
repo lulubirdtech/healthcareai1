@@ -3,7 +3,6 @@ import { motion } from 'framer-motion';
 import { useDropzone } from 'react-dropzone';
 import { 
   Camera, 
-  Upload, 
   X, 
   Eye,
   AlertCircle,
@@ -12,7 +11,6 @@ import {
   Zap,
   Leaf,
   Pill,
-  Clock,
   Activity,
   ShoppingCart
 } from 'lucide-react';
@@ -20,7 +18,7 @@ import {
 const PhotoDiagnosis: React.FC = () => {
   const [uploadedImages, setUploadedImages] = useState<File[]>([]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [diagnosis, setDiagnosis] = useState<any>(null);
+  const [diagnosis, setDiagnosis] = useState<Record<string, unknown> | null>(null);
   const [selectedBodyPart, setSelectedBodyPart] = useState('');
   const [imageType, setImageType] = useState('');
 

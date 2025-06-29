@@ -19,7 +19,7 @@ import { useAsyncAction } from '../hooks/useApi';
 const UploadAnalysis: React.FC = () => {
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [uploadedFileIds, setUploadedFileIds] = useState<string[]>([]);
-  const [analysisResults, setAnalysisResults] = useState<any>(null);
+  const [analysisResults, setAnalysisResults] = useState<Record<string, unknown> | null>(null);
   const [analysisId, setAnalysisId] = useState<string | null>(null);
   const [modelType, setModelType] = useState('general');
   const [sensitivity, setSensitivity] = useState('standard');
@@ -37,8 +37,8 @@ const UploadAnalysis: React.FC = () => {
       
       // Upload files to backend
       const result = await uploadFiles(() => ApiService.uploadFiles(acceptedFiles));
-      if (result?.files) {
-        setUploadedFileIds(prev => [...prev, ...result.files.map((f: any) => f.id)]);
+      if (result && 'files' in result) {
+        setUploadedFileIds(prev => [...prev, ...(result.files as Array<{ id: string }>).map((f) => f.id)]);
       }
     }
   });
@@ -59,10 +59,10 @@ const UploadAnalysis: React.FC = () => {
       })
     );
 
-    if (result) {
-      setAnalysisId(result.analysisId);
+    if (result && 'analysisId' in result) {
+      setAnalysisId(result.analysisId as string);
       // Poll for results
-      pollAnalysisResults(result.analysisId);
+      pollAnalysisResults(result.analysisId as string);
     }
   };
 
@@ -255,23 +255,24 @@ const UploadAnalysis: React.FC = () => {
                   <h3 className="font-semibold text-medical-dark mb-3">Detected Findings</h3>
                   <div className="space-y-3">
                     {analysisResults.findings.map((finding: any, index: number) => (
+                    {(analysisResults.findings as Array<Record<string, unknown>>).map((finding: Record<string, unknown>, index: number) => (
                       <div
                         key={index}
                         className="bg-white/50 rounded-xl p-4 border border-white/30"
                       >
                         <div className="flex items-center justify-between mb-2">
-                          <h4 className="font-medium text-gray-900">{finding.type}</h4>
+                          <h4 className="font-medium text-gray-900">{finding.type as string}</h4>
                           <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            finding.severity === 'low' ? 'bg-green-100 text-green-800' :
-                            finding.severity === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                            (finding.severity as string) === 'low' ? 'bg-green-100 text-green-800' :
+                            (finding.severity as string) === 'medium' ? 'bg-yellow-100 text-yellow-800' :
                             'bg-red-100 text-red-800'
                           }`}>
-                            {finding.severity}
+                            {finding.severity as string}
                           </span>
                         </div>
                         <div className="text-sm text-gray-600 space-y-1">
-                          <p><strong>Description:</strong> {finding.description}</p>
-                          <p><strong>Confidence:</strong> {(finding.confidence * 100).toFixed(1)}%</p>
+                          <p><strong>Description:</strong> {finding.description as string}</p>
+                          <p><strong>Confidence:</strong> {((finding.confidence as number) * 100).toFixed(1)}%</p>
                         </div>
                       </div>
                     ))}

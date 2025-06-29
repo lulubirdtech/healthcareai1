@@ -10,11 +10,9 @@ import {
   Leaf,
   Shield,
   Apple,
-  Activity,
   Sun,
   Droplets,
   Search,
-  Filter,
   Eye,
   Loader
 } from 'lucide-react';
@@ -23,8 +21,8 @@ import { aiService } from '../services/aiService';
 const HealthEducation: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const [selectedArticle, setSelectedArticle] = useState<any>(null);
-  const [generatedArticle, setGeneratedArticle] = useState<any>(null);
+  const [selectedArticle, setSelectedArticle] = useState<Record<string, unknown> | null>(null);
+  const [generatedArticle, setGeneratedArticle] = useState<Record<string, unknown> | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -152,7 +150,7 @@ const HealthEducation: React.FC = () => {
     }
   };
 
-  const handleReadFullArticle = async (content: any) => {
+  const handleReadFullArticle = async (content: Record<string, unknown>) => {
     setIsGenerating(true);
     setError(null);
     setSelectedArticle(content);
@@ -196,9 +194,9 @@ const HealthEducation: React.FC = () => {
         }, 2500);
         return;
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Article generation failed:', error);
-      setError(error.message || 'Failed to generate article');
+      setError(error instanceof Error ? error.message : 'Failed to generate article');
     } finally {
       setIsGenerating(false);
     }

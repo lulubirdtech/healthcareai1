@@ -4,7 +4,7 @@ export interface IChatMessage extends Document {
   userId: mongoose.Types.ObjectId;
   content: string;
   role: 'user' | 'assistant';
-  context?: Record<string, any>;
+  context?: Record<string, unknown>;
   timestamp: Date;
 }
 

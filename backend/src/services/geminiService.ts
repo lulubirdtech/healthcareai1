@@ -11,7 +11,7 @@ export class GeminiService {
     }
   }
 
-  async generateReport(analysis: any, template: string): Promise<string> {
+  async generateReport(analysis: Record<string, unknown>, template: string): Promise<string> {
     try {
       const prompt = this.buildReportPrompt(analysis, template);
       
@@ -36,7 +36,7 @@ export class GeminiService {
     }
   }
 
-  async generateChatResponse(message: string, similarCases: any[], context?: any): Promise<string> {
+  async generateChatResponse(message: string, similarCases: Record<string, unknown>[], context?: Record<string, unknown>): Promise<string> {
     try {
       const prompt = this.buildChatPrompt(message, similarCases, context);
       
@@ -61,7 +61,7 @@ export class GeminiService {
     }
   }
 
-  private buildReportPrompt(analysis: any, template: string): string {
+  private buildReportPrompt(analysis: Record<string, unknown>, template: string): string {
     return `
       Generate a professional medical imaging report based on the following analysis:
       
@@ -85,7 +85,7 @@ export class GeminiService {
     `;
   }
 
-  private buildChatPrompt(message: string, similarCases: any[], context?: any): string {
+  private buildChatPrompt(message: string, similarCases: Record<string, unknown>[], _context?: Record<string, unknown>): string {
     const casesContext = similarCases.length > 0 
       ? `\n\nSimilar cases for reference:\n${similarCases.map(c => `- ${c.description}`).join('\n')}`
       : '';
@@ -107,7 +107,7 @@ export class GeminiService {
     `;
   }
 
-  private generateFallbackReport(analysis: any): string {
+  private generateFallbackReport(analysis: Record<string, unknown>): string {
     return `
 MEDICAL IMAGING REPORT
 

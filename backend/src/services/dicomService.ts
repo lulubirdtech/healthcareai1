@@ -1,5 +1,5 @@
 export class DicomService {
-  async parseDicomMetadata(buffer: Buffer): Promise<Record<string, any>> {
+  async parseDicomMetadata(buffer: Buffer): Promise<Record<string, unknown>> {
     try {
       // In a real implementation, you'd use a DICOM parsing library like dcmjs
       // This is a simplified example
@@ -21,7 +21,7 @@ export class DicomService {
     }
   }
 
-  private extractPatientId(buffer: Buffer): string {
+  private extractPatientId(_buffer: Buffer): string {
     // Simplified patient ID extraction
     return `P-${Date.now().toString().slice(-6)}`;
   }
@@ -34,13 +34,13 @@ export class DicomService {
     return `SE-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
   }
 
-  private extractModality(buffer: Buffer): string {
+  private extractModality(_buffer: Buffer): string {
     // In a real implementation, this would parse DICOM tags
     // For now, return a default based on file characteristics
     return 'CT'; // Default modality
   }
 
-  private extractBodyPart(buffer: Buffer): string {
+  private extractBodyPart(_buffer: Buffer): string {
     // In a real implementation, this would parse DICOM tags
     return 'CHEST'; // Default body part
   }
@@ -50,7 +50,7 @@ export class DicomService {
       // Check for DICOM file signature
       const signature = buffer.slice(128, 132).toString();
       return signature === 'DICM';
-    } catch (error) {
+    } catch {
       return false;
     }
   }

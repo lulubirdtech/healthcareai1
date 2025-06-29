@@ -6,17 +6,13 @@ import {
   Apple, 
   Clock, 
   Search,
-  Filter,
   Heart,
-  Zap,
   Shield,
-  Thermometer,
   Droplets,
   Sun,
   Activity,
   Play,
   Eye,
-  CheckCircle,
   AlertCircle
 } from 'lucide-react';
 import { aiService } from '../services/aiService';
@@ -24,9 +20,9 @@ import { aiService } from '../services/aiService';
 const TreatmentPlans: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const [selectedTreatment, setSelectedTreatment] = useState<any>(null);
+  const [selectedTreatment, setSelectedTreatment] = useState<Record<string, unknown> | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [generatedPlan, setGeneratedPlan] = useState<any>(null);
+  const [generatedPlan, setGeneratedPlan] = useState<Record<string, unknown> | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const categories = [
@@ -115,7 +111,7 @@ const TreatmentPlans: React.FC = () => {
     }
   };
 
-  const handleStartTreatment = async (treatment: any) => {
+  const handleStartTreatment = async (treatment: Record<string, unknown>) => {
     setIsGenerating(true);
     setError(null);
     setSelectedTreatment(treatment);
@@ -185,15 +181,15 @@ const TreatmentPlans: React.FC = () => {
         }, 3000);
         return;
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Treatment plan generation failed:', error);
-      setError(error.message || 'Failed to generate treatment plan');
+      setError(error instanceof Error ? error.message : 'Failed to generate treatment plan');
     } finally {
       setIsGenerating(false);
     }
   };
 
-  const handleViewDetails = async (treatment: any) => {
+  const handleViewDetails = async (treatment: Record<string, unknown>) => {
     await handleStartTreatment(treatment);
   };
 
@@ -312,16 +308,17 @@ const TreatmentPlans: React.FC = () => {
               </h3>
               <div className="space-y-3">
                 {generatedPlan.dailySchedule.map((item: any, index: number) => (
+                {(generatedPlan.dailySchedule as Record<string, unknown>[]).map((item: Record<string, unknown>, index: number) => (
                   <div key={index} className="flex items-center">
-                    <span className="text-sm font-medium text-green-700 w-16">{item.time}</span>
+                    <span className="text-sm font-medium text-green-700 w-16">{item.time as string}</span>
                     <div className="flex-1 ml-3">
-                      <p className="text-sm text-gray-700">{item.activity}</p>
+                      <p className="text-sm text-gray-700">{item.activity as string}</p>
                       <span className={`text-xs px-2 py-1 rounded-full ${
-                        item.type === 'medication' ? 'bg-blue-100 text-blue-700' :
-                        item.type === 'nutrition' ? 'bg-orange-100 text-orange-700' :
+                        (item.type as string) === 'medication' ? 'bg-blue-100 text-blue-700' :
+                        (item.type as string) === 'nutrition' ? 'bg-orange-100 text-orange-700' :
                         'bg-purple-100 text-purple-700'
                       }`}>
-                        {item.type}
+                        {item.type as string}
                       </span>
                     </div>
                   </div>

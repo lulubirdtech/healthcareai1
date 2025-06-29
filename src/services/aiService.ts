@@ -76,7 +76,7 @@ class AIService {
     }
   }
 
-  async generateSymptomDiagnosis(symptoms: string, bodyParts: string[], severity: string, duration: string): Promise<any> {
+  async generateSymptomDiagnosis(symptoms: string, bodyParts: string[], severity: string, duration: string): Promise<Record<string, unknown>> {
     const provider = localStorage.getItem('ai_provider') || 'gemini';
     
     const prompt = `
@@ -131,7 +131,7 @@ Format the response as a JSON object with the following structure:
     }
   }
 
-  async generateTreatmentPlan(condition: string, severity: string): Promise<any> {
+  async generateTreatmentPlan(condition: string, severity: string): Promise<Record<string, unknown>> {
     const provider = localStorage.getItem('ai_provider') || 'gemini';
     
     const prompt = `
@@ -186,7 +186,7 @@ Format as JSON:
     }
   }
 
-  async generateHealthArticle(topic: string): Promise<any> {
+  async generateHealthArticle(topic: string): Promise<Record<string, unknown>> {
     const provider = localStorage.getItem('ai_provider') || 'gemini';
     
     const prompt = `
@@ -231,7 +231,7 @@ Format as JSON:
     }
   }
 
-  private parseTextResponse(text: string): any {
+  private parseTextResponse(_text: string): Record<string, unknown> {
     // Fallback parser for non-JSON responses
     return {
       condition: "AI-Generated Diagnosis",
@@ -266,7 +266,7 @@ Format as JSON:
     };
   }
 
-  private parseTreatmentResponse(text: string): any {
+  private parseTreatmentResponse(_text: string): Record<string, unknown> {
     return {
       lifecyclePhases: {
         phase1: "Immediate relief and symptom management",
@@ -323,7 +323,7 @@ Format as JSON:
     };
   }
 
-  private parseArticleResponse(text: string, topic: string): any {
+  private parseArticleResponse(text: string, topic: string): Record<string, unknown> {
     return {
       title: `Understanding ${topic}: A Comprehensive Guide`,
       overview: text.substring(0, 300) + "...",

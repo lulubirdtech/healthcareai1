@@ -83,7 +83,7 @@ router.get('/', auth, async (req, res) => {
   try {
     const { page = 1, limit = 20, modality, patientId } = req.query;
     
-    const filter: any = { uploadedBy: req.user.userId };
+    const filter: Record<string, unknown> = { uploadedBy: req.user.userId };
     if (modality) {
       filter.modality = modality;
     }

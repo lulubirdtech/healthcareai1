@@ -15,7 +15,7 @@ export class VertexAIService {
     });
   }
 
-  async analyzeImage(imagePath: string, analysisId: string) {
+  async analyzeImage(imagePath: string, _analysisId: string) {
     try {
       // This is a simplified example - in production, you'd use specific medical imaging models
       const model = this.vertexAI.getGenerativeModel({
@@ -52,7 +52,7 @@ export class VertexAIService {
     }
   }
 
-  private parseAIResponse(response: string) {
+  private parseAIResponse(_response: string) {
     // Parse the AI response and extract structured findings
     // This is a simplified example - you'd implement proper parsing logic
     return [
@@ -66,13 +66,13 @@ export class VertexAIService {
     ];
   }
 
-  private calculateOverallConfidence(findings: any[]): number {
+  private calculateOverallConfidence(findings: Record<string, unknown>[]): number {
     if (findings.length === 0) return 0;
-    const sum = findings.reduce((acc, finding) => acc + finding.confidence, 0);
+    const sum = findings.reduce((acc, finding) => acc + (finding.confidence as number), 0);
     return sum / findings.length;
   }
 
-  private async generateSegmentationMask(imagePath: string): Promise<string> {
+  private async generateSegmentationMask(_imagePath: string): Promise<string> {
     // Generate segmentation mask using specialized model
     // Return GCS path to the generated mask
     return `gs://medical-analysis-masks/${Date.now()}-mask.png`;

@@ -41,6 +41,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       setAuthState(prev => ({ ...prev, isLoading: true }));
       
       // Demo login - accept any email/password
+      console.log('Demo login with email:', email, 'password:', password);
       const demoUser: User = {
         id: '1',
         email: email,

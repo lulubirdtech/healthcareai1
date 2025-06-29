@@ -37,17 +37,17 @@ api.interceptors.request.use((config) => {
 // Handle auth errors
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
+  (error: unknown) => {
     console.error('API Error:', error.response?.data || error.message);
     
     // Handle network errors specifically
-    if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
+    if ((error as { code?: string }).code === 'ERR_NETWORK' || (error as Error).message === 'Network Error') {
       console.error('Network connection failed. Please ensure the backend server is running.');
       console.error(`Attempting to connect to: ${API_BASE_URL}`);
       console.error('For local development: Access frontend via HTTP (http://localhost:5173) to avoid mixed content issues');
     }
     
-    if (error.response?.status === 401) {
+    if ((error as { response?: { status?: number } }).response?.status === 401) {
       localStorage.removeItem('auth_token');
       // Only redirect if we're not already on the login page
       if (window.location.pathname !== '/login') {
@@ -64,8 +64,8 @@ export class ApiService {
     try {
       const response = await api.post('/auth/login', { email, password });
       return response.data;
-    } catch (error: any) {
-      if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
+    } catch (error: unknown) {
+      if ((error as { code?: string }).code === 'ERR_NETWORK' || (error as Error).message === 'Network Error') {
         throw new Error('Unable to connect to server. Please ensure the backend is running and access the frontend via HTTP: http://localhost:5173');
       }
       throw error;
@@ -95,7 +95,7 @@ export class ApiService {
   }
 
   // Upload endpoints
-  static async uploadFiles(files: File[]) {
+  static async uploadFiles(files: File[]): Promise<Record<string, unknown>> {
     const formData = new FormData();
     files.forEach(file => formData.append('files', file));
     
@@ -107,7 +107,7 @@ export class ApiService {
     return response.data;
   }
 
-  static async getUploadedFiles(params?: any) {
+  static async getUploadedFiles(params?: Record<string, unknown>) {
     const response = await api.get('/upload', { params });
     return response.data;
   }
@@ -118,7 +118,7 @@ export class ApiService {
   }
 
   // Analysis endpoints
-  static async startAnalysis(data: any) {
+  static async startAnalysis(data: Record<string, unknown>) {
     const response = await api.post('/analysis/analyze', data);
     return response.data;
   }
@@ -128,13 +128,13 @@ export class ApiService {
     return response.data;
   }
 
-  static async getAnalyses(params?: any) {
+  static async getAnalyses(params?: Record<string, unknown>) {
     const response = await api.get('/analysis', { params });
     return response.data;
   }
 
   // Reports endpoints
-  static async generateReport(data: any) {
+  static async generateReport(data: Record<string, unknown>) {
     const response = await api.post('/reports/generate', data);
     return response.data;
   }
@@ -144,23 +144,23 @@ export class ApiService {
     return response.data;
   }
 
-  static async updateReport(reportId: string, data: any) {
+  static async updateReport(reportId: string, data: Record<string, unknown>) {
     const response = await api.put(`/reports/${reportId}`, data);
     return response.data;
   }
 
-  static async getReports(params?: any) {
+  static async getReports(params?: Record<string, unknown>) {
     const response = await api.get('/reports', { params });
     return response.data;
   }
 
   // Chat endpoints
-  static async sendMessage(data: any) {
+  static async sendMessage(data: Record<string, unknown>) {
     const response = await api.post('/chat/message', data);
     return response.data;
   }
 
-  static async getChatHistory(params?: any) {
+  static async getChatHistory(params?: Record<string, unknown>) {
     const response = await api.get('/chat/history', { params });
     return response.data;
   }

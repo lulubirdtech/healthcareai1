@@ -10,7 +10,7 @@ const gemini = new GeminiService();
 // Generate report from analysis
 router.post('/generate', auth, async (req, res) => {
   try {
-    const { _analysisId, template = 'standard', includeImages = true } = req.body;
+    const { _analysisId, template = 'standard' } = req.body;
 
     // Find the analysis
     const analysis = await Analysis.findById(_analysisId)

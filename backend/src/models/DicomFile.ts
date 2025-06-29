@@ -11,7 +11,7 @@ export interface IDicomFile extends Document {
   seriesId?: string;
   modality?: string;
   bodyPart?: string;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
   uploadDate: Date;
 }
 

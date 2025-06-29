@@ -4,10 +4,6 @@ import { Link } from 'react-router-dom';
 import { 
   Activity, 
   Heart, 
-  Users, 
-  Clock,
-  TrendingUp,
-  AlertCircle,
   AlertTriangle,
   CheckCircle,
   Stethoscope,

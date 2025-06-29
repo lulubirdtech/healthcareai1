@@ -80,7 +80,7 @@ router.get('/', auth, async (req, res) => {
   try {
     const { page = 1, limit = 10, status } = req.query;
     
-    const filter: any = { userId: req.user.userId };
+    const filter: Record<string, unknown> = { userId: req.user.userId };
     if (status) {
       filter.status = status;
     }

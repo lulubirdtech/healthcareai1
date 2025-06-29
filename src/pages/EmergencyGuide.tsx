@@ -14,9 +14,7 @@ import {
   Activity,
   Users,
   Scissors,
-  Flame,
   Skull,
-  Baby,
   Waves,
   Wind,
   Atom as Stomach

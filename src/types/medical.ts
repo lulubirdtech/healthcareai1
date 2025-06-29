@@ -56,5 +56,5 @@ export interface ChatMessage {
   content: string;
   role: 'user' | 'assistant';
   timestamp: Date;
-  context?: any;
+  context?: Record<string, unknown>;
 }

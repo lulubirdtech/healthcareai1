@@ -1,10 +1,14 @@
 import { Request, Response, NextFunction } from 'express';
 
+interface MongoError extends Error {
+  code?: number;
+}
+
 export const errorHandler = (
   error: Error,
   req: Request,
   res: Response,
-  next: NextFunction
+  _next: NextFunction
 ) => {
   console.log('Error:', error);
 
@@ -17,7 +21,7 @@ export const errorHandler = (
   }
 
   // Mongoose duplicate key error
-  if (error.name === 'MongoError' && (error as any).code === 11000) {
+  if (error.name === 'MongoError' && (error as MongoError).code === 11000) {
     return res.status(400).json({
       message: 'Duplicate entry',
       details: 'A record with this information already exists'

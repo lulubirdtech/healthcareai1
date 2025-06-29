@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Stethoscope, Send, Bot, User, Thermometer, Heart, Brain, Atom as Stomach, Bone, Eye, Ear, Settings as Lungs, AlertCircle, CheckCircle, Clock, Zap } from 'lucide-react';
+import { Stethoscope, Bot, User, Thermometer, Heart, Brain, Atom as Stomach, Bone, Eye, Ear, Settings as Lungs, AlertCircle, CheckCircle, Clock, Zap } from 'lucide-react';
 import { aiService } from '../services/aiService';
 
 const SymptomChecker: React.FC = () => {
@@ -9,7 +9,7 @@ const SymptomChecker: React.FC = () => {
   const [severity, setSeverity] = useState('');
   const [duration, setDuration] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [diagnosis, setDiagnosis] = useState<any>(null);
+  const [diagnosis, setDiagnosis] = useState<Record<string, unknown> | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const bodyParts = [
@@ -93,9 +93,9 @@ const SymptomChecker: React.FC = () => {
         }, 3000);
         return;
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Symptom analysis failed:', error);
-      setError(error.message || 'Analysis failed. Please try again.');
+      setError(error instanceof Error ? error.message : 'Analysis failed. Please try again.');
     } finally {
       setIsAnalyzing(false);
     }

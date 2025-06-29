@@ -2,7 +2,7 @@ import { Analysis } from '../models/Analysis';
 import { Report } from '../models/Report';
 
 export class VectorSearchService {
-  async findSimilarCases(query: string, limit: number = 5): Promise<any[]> {
+  async findSimilarCases(query: string, limit: number = 5): Promise<Record<string, unknown>[]> {
     try {
       // In a production system, you'd use vector embeddings and similarity search
       // This is a simplified text-based search for demonstration
@@ -55,13 +55,13 @@ export class VectorSearchService {
     }
   }
 
-  async generateEmbedding(text: string): Promise<number[]> {
+  async generateEmbedding(_text: string): Promise<number[]> {
     // In a production system, you'd use a proper embedding model
     // This is a placeholder that returns a mock embedding
     return Array.from({ length: 768 }, () => Math.random());
   }
 
-  async storeEmbedding(documentId: string, embedding: number[], metadata: any): Promise<void> {
+  async storeEmbedding(documentId: string, _embedding: number[], _metadata: Record<string, unknown>): Promise<void> {
     // Store embedding in vector database (e.g., Pinecone, Weaviate, or MongoDB Atlas Vector Search)
     // This is a placeholder implementation
     console.log(`Storing embedding for document ${documentId}`);
