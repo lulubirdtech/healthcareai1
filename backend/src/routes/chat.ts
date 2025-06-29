@@ -15,7 +15,7 @@ router.post('/message', auth, async (req, res) => {
 
     // Save user message
     const userMessage = new ChatMessage({
-      userId: req.user.userId,
+      userId: req.user!.userId,
       content: message,
       role: 'user',
       context,
@@ -31,7 +31,7 @@ router.post('/message', auth, async (req, res) => {
 
     // Save AI response
     const assistantMessage = new ChatMessage({
-      userId: req.user.userId,
+      userId: req.user!.userId,
       content: aiResponse,
       role: 'assistant',
       context: { similarCases },
@@ -54,7 +54,7 @@ router.get('/history', auth, async (req, res) => {
   try {
     const { page = 1, limit = 50 } = req.query;
 
-    const messages = await ChatMessage.find({ userId: req.user.userId })
+    const messages = await ChatMessage.find({ userId: req.user!.userId })
       .sort({ timestamp: -1 })
       .limit(Number(limit))
       .skip((Number(page) - 1) * Number(limit));
@@ -75,7 +75,7 @@ router.get('/history', auth, async (req, res) => {
 // Clear chat history
 router.delete('/history', auth, async (req, res) => {
   try {
-    await ChatMessage.deleteMany({ userId: req.user.userId });
+    await ChatMessage.deleteMany({ userId: req.user!.userId });
     res.json({ message: 'Chat history cleared' });
   } catch (error) {
     console.error('Clear chat history error:', error);

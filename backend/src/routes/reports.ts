@@ -10,10 +10,10 @@ const gemini = new GeminiService();
 // Generate report from analysis
 router.post('/generate', auth, async (req, res) => {
   try {
-    const { _analysisId, template = 'standard' } = req.body;
+    const { analysisId, template = 'standard' } = req.body;
 
     // Find the analysis
-    const analysis = await Analysis.findById(_analysisId)
+    const analysis = await Analysis.findById(analysisId)
       .populate('dicomFileId')
       .populate('userId');
 
@@ -26,14 +26,14 @@ router.post('/generate', auth, async (req, res) => {
     }
 
     // Generate report using Gemini
-    const reportContent = await gemini.generateReport(analysis, template);
+    const reportContent = await gemini.generateReport(analysis.toObject(), template);
 
     // Create report record
     const report = new Report({
-      _analysisId,
-      userId: req.user.userId,
-      patientId: analysis.dicomFileId.patientId,
-      title: `${analysis.dicomFileId.modality} Analysis Report`,
+      analysisId,
+      userId: req.user!.userId,
+      patientId: (analysis.dicomFileId as any).patientId || 'Unknown',
+      title: `${(analysis.dicomFileId as any).modality || 'Medical'} Analysis Report`,
       content: reportContent,
       template,
       status: 'draft',
@@ -43,9 +43,9 @@ router.post('/generate', auth, async (req, res) => {
     await report.save();
 
     res.json(report);
-  } catch (_error) {
-    console._error('Report generation _error:', _error);
-    res.status(500).json({ message: 'Internal server _error' });
+  } catch (error) {
+    console.error('Report generation error:', error);
+    res.status(500).json({ message: 'Internal server error' });
   }
 });
 
@@ -53,7 +53,7 @@ router.post('/generate', auth, async (req, res) => {
 router.get('/:reportId', auth, async (req, res) => {
   try {
     const report = await Report.findById(req.params.reportId)
-      .populate('_analysisId')
+      .populate('analysisId')
       .populate('userId', 'name email');
 
     if (!report) {
@@ -61,9 +61,9 @@ router.get('/:reportId', auth, async (req, res) => {
     }
 
     res.json(report);
-  } catch (_error) {
-    console._error('Get report _error:', _error);
-    res.status(500).json({ message: 'Internal server _error' });
+  } catch (error) {
+    console.error('Get report error:', error);
+    res.status(500).json({ message: 'Internal server error' });
   }
 });
 
@@ -78,7 +78,7 @@ router.put('/:reportId', auth, async (req, res) => {
     }
 
     // Check if user can edit this report
-    if (report.userId.toString() !== req.user.userId && req.user.role !== 'admin') {
+    if (report.userId.toString() !== req.user!.userId && req.user!.role !== 'admin') {
       return res.status(403).json({ message: 'Access denied' });
     }
 
@@ -88,9 +88,9 @@ router.put('/:reportId', auth, async (req, res) => {
     await report.save();
 
     res.json(report);
-  } catch (_error) {
-    console._error('Update report _error:', _error);
-    res.status(500).json({ message: 'Internal server _error' });
+  } catch (error) {
+    console.error('Update report error:', error);
+    res.status(500).json({ message: 'Internal server error' });
   }
 });
 
@@ -99,9 +99,9 @@ router.get('/', auth, async (req, res) => {
   try {
     const { page = 1, limit = 10, status, patientId } = req.query;
     
-    const filter: unknown = {};
-    if (req.user.role !== 'admin') {
-      filter.userId = req.user.userId;
+    const filter: Record<string, unknown> = {};
+    if (req.user!.role !== 'admin') {
+      filter.userId = req.user!.userId;
     }
     if (status) {
       filter.status = status;
@@ -111,7 +111,7 @@ router.get('/', auth, async (req, res) => {
     }
 
     const reports = await Report.find(filter)
-      .populate('_analysisId')
+      .populate('analysisId')
       .populate('userId', 'name email')
       .sort({ createdAt: -1 })
       .limit(Number(limit))
@@ -128,10 +128,8 @@ router.get('/', auth, async (req, res) => {
         pages: Math.ceil(total / Number(limit))
       }
     });
-  } catch (_error) {
-    console._error('List reports _error:', _error);
-    res.status(500).json({ message: 'Internal server _error' });
+  } catch (error) {
+    console.error('List reports error:', error);
+    res.status(500).json({ message: 'Internal server error' });
   }
 });
-
-export { router as reportsRoutes };

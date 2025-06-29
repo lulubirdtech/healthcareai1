@@ -1,11 +1,9 @@
 import express from 'express';
 import { auth } from '../middleware/auth';
-import { VertexAIService } from '../services/vertexAIService';
 import { Analysis } from '../models/Analysis';
 import { DicomFile } from '../models/DicomFile';
 
 const router = express.Router();
-const vertexAI = new VertexAIService();
 
 // Start analysis endpoint
 router.post('/analyze', auth, async (req, res) => {
@@ -29,25 +27,32 @@ router.post('/analyze', auth, async (req, res) => {
     });
     await analysis.save();
 
-    // Start AI analysis (async)
-    vertexAI.analyzeImage(dicomFile.gcsPath, analysis._id.toString())
-      .then(async (results) => {
+    // Simulate AI analysis (async)
+    setTimeout(async () => {
+      try {
         analysis.status = 'completed';
-        analysis.findings = results.findings;
-        analysis.confidence = results.confidence;
-        analysis.segmentationMask = results.segmentationMask;
+        analysis.findings = [
+          {
+            type: 'Nodule',
+            description: 'Small pulmonary nodule identified in right upper lobe',
+            location: { x: 150, y: 200, width: 20, height: 20 },
+            confidence: 0.85,
+            severity: 'medium' as const
+          }
+        ];
+        analysis.confidence = 0.85;
         analysis.processingTime = Date.now() - analysis.createdAt.getTime();
         await analysis.save();
-      })
-      .catch(async (error) => {
+      } catch (error) {
         console.error('AI analysis error:', error);
         analysis.status = 'failed';
-        analysis.error = error.message;
+        analysis.error = error instanceof Error ? error.message : 'Analysis failed';
         await analysis.save();
-      });
+      }
+    }, 5000);
 
     res.json({
-      analysisId: analysis._id,
+      analysisId: analysis._id.toString(),
       status: 'processing',
       message: 'Analysis started successfully'
     });

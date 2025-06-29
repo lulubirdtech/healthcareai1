@@ -88,6 +88,19 @@ const Layout: React.FC = () => {
           <div className="p-3 sm:p-4 lg:p-6 max-w-7xl mx-auto">
             <Outlet />
           </div>
+          
+          {/* Built with Bolt.new badge */}
+          <div className="fixed bottom-4 right-4 z-50">
+            <a
+              href="https://bolt.new"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center px-3 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white text-xs font-medium rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 backdrop-blur-sm border border-white/20"
+            >
+              <span className="mr-2">⚡</span>
+              Built with Bolt.new
+            </a>
+          </div>
         </main>
       </div>
     </div>

@@ -54,7 +54,7 @@ router.post('/login', async (req, res) => {
 // Token validation endpoint
 router.get('/validate', auth, async (req, res) => {
   try {
-    const user = await User.findById(req.user.userId).select('-password');
+    const user = await User.findById(req.user!.userId).select('-password');
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }

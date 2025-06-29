@@ -6,7 +6,7 @@ import { DicomService } from '../services/dicomService';
 import { DicomFile } from '../models/DicomFile';
 
 const router = express.Router();
-const storage = multer.memoryBuffer();
+const storage = multer.memoryStorage();
 const upload = multer({ 
   storage,
   limits: {
@@ -20,7 +20,7 @@ const dicomService = new DicomService();
 // Upload DICOM or medical images
 router.post('/', auth, upload.array('files', 10), async (req, res) => {
   try {
-    const files = req.files as Express.Multer.File[];
+    const files = req.files as Express.Multer.File[] | undefined;
     if (!files || files.length === 0) {
       return res.status(400).json({ message: 'No files uploaded' });
     }
@@ -33,7 +33,7 @@ router.post('/', auth, upload.array('files', 10), async (req, res) => {
         const gcsPath = await cloudStorage.uploadFile(file, 'medical-images');
         
         // Parse DICOM metadata if applicable
-        let metadata = {};
+        let metadata: Record<string, unknown> = {};
         if (file.mimetype === 'application/dicom' || file.originalname.endsWith('.dcm')) {
           metadata = await dicomService.parseDicomMetadata(file.buffer);
         }
@@ -44,12 +44,12 @@ router.post('/', auth, upload.array('files', 10), async (req, res) => {
           fileSize: file.size,
           mimeType: file.mimetype,
           gcsPath,
-          uploadedBy: req.user.userId,
-          patientId: metadata.patientId || null,
-          studyId: metadata.studyId || null,
-          seriesId: metadata.seriesId || null,
-          modality: metadata.modality || null,
-          bodyPart: metadata.bodyPart || null,
+          uploadedBy: req.user!.userId,
+          patientId: (metadata.patientId as string) || undefined,
+          studyId: (metadata.studyId as string) || undefined,
+          seriesId: (metadata.seriesId as string) || undefined,
+          modality: (metadata.modality as string) || undefined,
+          bodyPart: (metadata.bodyPart as string) || undefined,
           metadata,
           uploadDate: new Date()
         });
@@ -83,7 +83,7 @@ router.get('/', auth, async (req, res) => {
   try {
     const { page = 1, limit = 20, modality, patientId } = req.query;
     
-    const filter: Record<string, unknown> = { uploadedBy: req.user.userId };
+    const filter: Record<string, unknown> = { uploadedBy: req.user!.userId };
     if (modality) {
       filter.modality = modality;
     }
