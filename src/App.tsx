@@ -6,11 +6,13 @@ import Dashboard from './pages/Dashboard';
 import SymptomChecker from './pages/SymptomChecker';
 import PhotoDiagnosis from './pages/PhotoDiagnosis';
 import TreatmentPlans from './pages/TreatmentPlans';
+import StartConsultation from './pages/StartConsultation';
 import HealthEducation from './pages/HealthEducation';
 import EmergencyGuide from './pages/EmergencyGuide';
 import Settings from './pages/Settings';
 import Login from './pages/Login';
 import { AuthProvider } from './contexts/AuthContext';
+import { ShoppingProvider } from './contexts/ShoppingContext';
 
 const queryClient = new QueryClient();
 
@@ -18,6 +20,7 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
+        <ShoppingProvider>
         <Router>
           <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-medical-light">
             <Routes>
@@ -25,6 +28,7 @@ function App() {
               <Route path="/" element={<Layout />}>
                 <Route index element={<Dashboard />} />
                 <Route path="symptoms" element={<SymptomChecker />} />
+                <Route path="consultation" element={<StartConsultation />} />
                 <Route path="photo-diagnosis" element={<PhotoDiagnosis />} />
                 <Route path="treatments" element={<TreatmentPlans />} />
                 <Route path="education" element={<HealthEducation />} />
@@ -34,6 +38,7 @@ function App() {
             </Routes>
           </div>
         </Router>
+        </ShoppingProvider>
       </AuthProvider>
     </QueryClientProvider>
   );

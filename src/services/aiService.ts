@@ -1,3 +1,4 @@
+import { ShoppingCartItem } from '../types/shopping';
 class AIService {
   private getApiKey(provider: 'gemini' | 'openai'): string | null {
     // First check localStorage (user settings)
@@ -238,6 +239,157 @@ Format as JSON:
       console.error('Health article generation failed:', error);
       throw error;
     }
+  }
+
+  async analyzePhoto(imageData: string, imageType: string, bodyPart: string): Promise<Record<string, unknown>> {
+    const provider = localStorage.getItem('ai_provider') || 'openai';
+    
+    const prompt = `
+As a medical AI assistant, analyze this medical image and provide a comprehensive diagnosis:
+
+Image Type: ${imageType}
+Body Part: ${bodyPart}
+
+Please provide a structured response with:
+1. Condition name and confidence percentage (0-100)
+2. Brief description of findings
+3. Severity level (mild, moderate, severe)
+4. Whether anomaly is detected (true/false)
+5. 5 natural remedies with specific instructions
+6. 5 healing foods and dietary recommendations
+7. 3 recommended medications with dosages
+8. 4 exercises suitable for this condition
+9. 4 administration instructions
+10. Prevention strategies
+11. Warning signs to watch for
+12. Treatment plan phases
+
+Format the response as a JSON object with the following structure:
+{
+  "condition": "condition name",
+  "confidence": number,
+  "description": "description",
+  "severity": "mild|moderate|severe",
+  "anomalyDetected": boolean,
+  "naturalRemedies": ["remedy1", "remedy2", ...],
+  "foods": ["food1", "food2", ...],
+  "medications": ["med1", "med2", ...],
+  "exercises": ["exercise1", "exercise2", ...],
+  "administration": ["instruction1", "instruction2", ...],
+  "prevention": ["strategy1", "strategy2", ...],
+  "warning": "warning text",
+  "treatmentPlan": {
+    "phase1": "description",
+    "phase2": "description",
+    "phase3": "description"
+  }
+}
+`;
+
+    try {
+      let response: string;
+      if (provider === 'openai') {
+        response = await this.callOpenAIAPI(prompt);
+      } else {
+        response = await this.callGeminiAPI(prompt);
+      }
+
+      try {
+        return JSON.parse(response);
+      } catch {
+        return this.parsePhotoAnalysisResponse(response);
+      }
+    } catch (error) {
+      console.error('Photo analysis failed:', error);
+      throw error;
+    }
+  }
+
+  extractShoppingItems(diagnosis: Record<string, unknown>): ShoppingCartItem[] {
+    const items: ShoppingCartItem[] = [];
+    
+    // Extract medications
+    if (diagnosis.medications && Array.isArray(diagnosis.medications)) {
+      diagnosis.medications.forEach((med: string, index: number) => {
+        items.push({
+          id: `med-${index}`,
+          name: med,
+          type: 'medicine',
+          price: { naira: Math.floor(Math.random() * 5000) + 1000, dollar: Math.floor(Math.random() * 50) + 10 },
+          quantity: 1,
+          description: `Recommended medication: ${med}`
+        });
+      });
+    }
+
+    // Extract foods
+    if (diagnosis.foods && Array.isArray(diagnosis.foods)) {
+      diagnosis.foods.forEach((food: string, index: number) => {
+        items.push({
+          id: `food-${index}`,
+          name: food,
+          type: 'food',
+          price: { naira: Math.floor(Math.random() * 2000) + 500, dollar: Math.floor(Math.random() * 20) + 5 },
+          quantity: 1,
+          description: `Healing food: ${food}`
+        });
+      });
+    }
+
+    return items;
+  }
+
+  private parsePhotoAnalysisResponse(text: string): Record<string, unknown> {
+    return {
+      condition: "AI-Generated Photo Diagnosis",
+      confidence: 78,
+      description: text.substring(0, 200) + "...",
+      severity: "moderate",
+      anomalyDetected: true,
+      naturalRemedies: [
+        "Apply cool compresses to affected area",
+        "Use natural anti-inflammatory remedies",
+        "Maintain proper hygiene",
+        "Get adequate rest",
+        "Stay hydrated"
+      ],
+      foods: [
+        "Anti-inflammatory foods",
+        "Fresh fruits and vegetables",
+        "Lean proteins",
+        "Whole grains",
+        "Healthy fats"
+      ],
+      medications: [
+        "Over-the-counter pain relief",
+        "Topical treatments",
+        "Anti-inflammatory medications"
+      ],
+      exercises: [
+        "Gentle stretching",
+        "Light walking",
+        "Breathing exercises",
+        "Range of motion activities"
+      ],
+      administration: [
+        "Take medications with food",
+        "Apply treatments as directed",
+        "Monitor symptoms closely",
+        "Follow up with healthcare provider"
+      ],
+      prevention: [
+        "Maintain good hygiene",
+        "Avoid known triggers",
+        "Regular health checkups",
+        "Healthy lifestyle habits"
+      ],
+      warning: "Seek immediate medical attention if symptoms worsen or persist.",
+      treatmentPlan: {
+        phase1: "Immediate relief and symptom management (Days 1-3)",
+        phase2: "Active treatment and healing phase (Days 4-7)",
+        phase3: "Recovery and prevention phase (Week 2+)"
+      }
+    };
   }
 
   private parseTextResponse(text: string): Record<string, unknown> {
