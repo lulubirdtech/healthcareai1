@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import { useShopping } from '../contexts/ShoppingContext';
+import ShoppingCart from '../components/ShoppingCart';
 import { 
   Pill, 
   Leaf, 
@@ -13,7 +15,8 @@ import {
   Activity,
   Play,
   Eye,
-  AlertCircle
+  AlertCircle,
+  ShoppingCart as CartIcon
 } from 'lucide-react';
 import { aiService } from '../services/aiService';
 
@@ -24,6 +27,9 @@ const TreatmentPlans: React.FC = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedPlan, setGeneratedPlan] = useState<Record<string, unknown> | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [showCart, setShowCart] = useState(false);
+
+  const { addToCart, cartItems } = useShopping();
 
   const categories = [
     { id: 'all', name: 'All Treatments', icon: Pill },
@@ -193,6 +199,14 @@ const TreatmentPlans: React.FC = () => {
     await handleStartTreatment(treatment);
   };
 
+  const handleAddPlanItems = () => {
+    if (!generatedPlan) return;
+
+    const items = aiService.extractShoppingItems(generatedPlan);
+    items.forEach(item => addToCart(item));
+    setShowCart(true);
+  };
+
   return (
     <div className="space-y-6">
       <motion.div
@@ -200,15 +214,32 @@ const TreatmentPlans: React.FC = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <h1 className="text-3xl font-bold text-gray-800 mb-2">Natural Treatment Plans</h1>
-        <p className="text-gray-600">Comprehensive treatment plans combining natural remedies, nutrition therapy, and medications for common health conditions.</p>
-        {!aiService.isConfigured() && (
-          <div className="mt-2 p-3 bg-yellow-100 border-2 border-yellow-300 rounded-lg">
-            <p className="text-sm text-yellow-800">
-              <strong>Demo Mode:</strong> Configure API keys in Settings → AI Configuration for personalized AI-generated treatment plans.
-            </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-800 mb-2">Natural Treatment Plans</h1>
+            <p className="text-gray-600">Comprehensive treatment plans combining natural remedies, nutrition therapy, and medications for common health conditions.</p>
+            {!aiService.isConfigured() && (
+              <div className="mt-2 p-3 bg-yellow-100 border-2 border-yellow-300 rounded-lg">
+                <p className="text-sm text-yellow-800">
+                  <strong>Demo Mode:</strong> Configure API keys in Settings → AI Configuration for personalized AI-generated treatment plans.
+                </p>
+              </div>
+            )}
           </div>
-        )}
+          
+          {/* Shopping Cart Button */}
+          <button
+            onClick={() => setShowCart(true)}
+            className="relative bg-gradient-to-r from-medical-primary to-medical-secondary text-white p-3 rounded-xl hover:shadow-lg transition-all duration-200"
+          >
+            <CartIcon className="h-6 w-6" />
+            {cartItems.length > 0 && (
+              <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                {cartItems.length}
+              </span>
+            )}
+          </button>
+        </div>
       </motion.div>
 
       {/* Search and Filter */}
@@ -389,6 +420,17 @@ const TreatmentPlans: React.FC = () => {
               </ul>
             </div>
           </div>
+
+          {/* Add to Cart Button */}
+          <div className="mt-6">
+            <button
+              onClick={handleAddPlanItems}
+              className="w-full bg-gradient-to-r from-green-600 to-green-700 text-white py-3 px-4 rounded-xl font-medium hover:shadow-lg transform hover:scale-[1.02] transition-all duration-200 flex items-center justify-center"
+            >
+              <CartIcon className="h-4 w-4 mr-2" />
+              Add Recommended Items to Cart
+            </button>
+          </div>
         </motion.div>
       )}
 
@@ -499,6 +541,9 @@ const TreatmentPlans: React.FC = () => {
           </div>
         </div>
       </motion.div>
+
+      {/* Shopping Cart */}
+      <ShoppingCart isOpen={showCart} onClose={() => setShowCart(false)} />
     </div>
   );
 };

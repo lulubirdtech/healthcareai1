@@ -1,19 +1,5 @@
 import axios from 'axios';
 
-interface IAnalysis {
-  dicomFileId: {
-    patientId?: string;
-    modality?: string;
-    bodyPart?: string;
-  };
-  findings: Array<{
-    type: string;
-    description: string;
-    confidence: number;
-  }>;
-  confidence: number;
-}
-
 export class GeminiService {
   private apiKey: string;
   private baseURL = 'https://generativelanguage.googleapis.com/v1beta';
