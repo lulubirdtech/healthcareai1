@@ -306,7 +306,6 @@ const TreatmentPlans: React.FC = () => {
                 <Clock className="h-5 w-5 mr-2 text-green-600" />
                 Daily Schedule
               </h3>
-              <div className="space-y-3">
                 {(generatedPlan.dailySchedule as Record<string, unknown>[]).map((item: Record<string, unknown>, index: number) => (
                   <div key={index} className="flex items-center">
                     <span className="text-sm font-medium text-green-700 w-16">{item.time as string}</span>
