@@ -1,5 +1,19 @@
 import axios from 'axios';
 
+interface IAnalysis {
+  dicomFileId: {
+    patientId?: string;
+    modality?: string;
+    bodyPart?: string;
+  };
+  findings: Array<{
+    type: string;
+    description: string;
+    confidence: number;
+  }>;
+  confidence: number;
+}
+
 export class GeminiService {
   private apiKey: string;
   private baseURL = 'https://generativelanguage.googleapis.com/v1beta';
@@ -62,15 +76,18 @@ export class GeminiService {
   }
 
   private buildReportPrompt(analysis: Record<string, unknown>, template: string): string {
+    const dicomFileData = analysis.dicomFileId as Record<string, unknown>;
+    const findings = analysis.findings as Array<Record<string, unknown>>;
+    
     return `
       Generate a professional medical imaging report based on the following analysis:
       
-      Patient ID: ${analysis.dicomFileId.patientId || 'Unknown'}
-      Study Type: ${analysis.dicomFileId.modality || 'Unknown'}
-      Body Part: ${analysis.dicomFileId.bodyPart || 'Unknown'}
+      Patient ID: ${dicomFileData.patientId || 'Unknown'}
+      Study Type: ${dicomFileData.modality || 'Unknown'}
+      Body Part: ${dicomFileData.bodyPart || 'Unknown'}
       
       AI Analysis Findings:
-      ${analysis.findings.map(f => `- ${f.type}: ${f.description} (Confidence: ${(f.confidence * 100).toFixed(1)}%)`).join('\n')}
+      ${findings.map(f => `- ${f.type}: ${f.description} (Confidence: ${((f.confidence as number) * 100).toFixed(1)}%)`).join('\n')}
       
       Template: ${template}
       
@@ -108,19 +125,22 @@ export class GeminiService {
   }
 
   private generateFallbackReport(analysis: Record<string, unknown>): string {
+    const dicomFileData = analysis.dicomFileId as Record<string, unknown>;
+    const findings = analysis.findings as Array<Record<string, unknown>>;
+    
     return `
 MEDICAL IMAGING REPORT
 
-Patient ID: ${analysis.dicomFileId.patientId || 'Unknown'}
+Patient ID: ${dicomFileData.patientId || 'Unknown'}
 Study Date: ${new Date().toLocaleDateString()}
-Modality: ${analysis.dicomFileId.modality || 'Unknown'}
+Modality: ${dicomFileData.modality || 'Unknown'}
 
 FINDINGS:
-${analysis.findings.map(f => `${f.type}: ${f.description}`).join('\n')}
+${findings.map(f => `${f.type}: ${f.description}`).join('\n')}
 
 IMPRESSION:
-AI-assisted analysis completed. ${analysis.findings.length} finding(s) identified.
-Overall confidence: ${(analysis.confidence * 100).toFixed(1)}%
+AI-assisted analysis completed. ${findings.length} finding(s) identified.
+Overall confidence: ${((analysis.confidence as number) * 100).toFixed(1)}%
 
 RECOMMENDATIONS:
 Clinical correlation recommended. Consider follow-up imaging if clinically indicated.

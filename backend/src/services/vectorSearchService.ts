@@ -1,5 +1,5 @@
-import { Analysis } from '../models/Analysis';
-import { Report } from '../models/Report';
+import { Analysis } from '../models/Analysis.js';
+import { Report } from '../models/Report.js';
 
 export class VectorSearchService {
   async findSimilarCases(query: string, limit: number = 5): Promise<Record<string, unknown>[]> {
@@ -31,14 +31,17 @@ export class VectorSearchService {
 
       // Combine and format results
       const similarCases = [
-        ...analyses.map(analysis => ({
-          type: 'analysis',
-          id: analysis._id,
-          description: `${(analysis.dicomFileId as Record<string, unknown>).modality as string || 'Medical'} analysis with ${analysis.findings.length} findings`,
-          findings: analysis.findings,
-          confidence: analysis.confidence,
-          modality: (analysis.dicomFileId as Record<string, unknown>).modality as string || 'Unknown'
-        })),
+        ...analyses.map(analysis => {
+          const dicomFileData = analysis.dicomFileId as Record<string, unknown>;
+          return {
+            type: 'analysis',
+            id: analysis._id,
+            description: `${dicomFileData.modality as string || 'Medical'} analysis with ${analysis.findings.length} findings`,
+            findings: analysis.findings,
+            confidence: analysis.confidence,
+            modality: dicomFileData.modality as string || 'Unknown'
+          };
+        }),
         ...reports.map(report => ({
           type: 'report',
           id: report._id,

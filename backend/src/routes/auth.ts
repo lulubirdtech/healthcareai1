@@ -1,8 +1,16 @@
 import express from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { User } from '../models/User';
-import { auth } from '../middleware/auth';
+import { User } from '../models/User.js';
+import { auth } from '../middleware/auth.js';
+
+interface AuthRequest extends express.Request {
+  user?: {
+    userId: string;
+    email: string;
+    role: string;
+  };
+}
 
 const router = express.Router();
 
@@ -52,7 +60,7 @@ router.post('/login', async (req, res) => {
 });
 
 // Token validation endpoint
-router.get('/validate', auth, async (req, res) => {
+router.get('/validate', auth, async (req: AuthRequest, res) => {
   try {
     const user = await User.findById(req.user!.userId).select('-password');
     if (!user) {

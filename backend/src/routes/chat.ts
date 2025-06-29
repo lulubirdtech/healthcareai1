@@ -1,15 +1,23 @@
 import express from 'express';
-import { auth } from '../middleware/auth';
-import { GeminiService } from '../services/geminiService';
-import { VectorSearchService } from '../services/vectorSearchService';
-import { ChatMessage } from '../models/ChatMessage';
+import { auth } from '../middleware/auth.js';
+import { GeminiService } from '../services/geminiService.js';
+import { VectorSearchService } from '../services/vectorSearchService.js';
+import { ChatMessage } from '../models/ChatMessage.js';
+
+interface AuthRequest extends express.Request {
+  user?: {
+    userId: string;
+    email: string;
+    role: string;
+  };
+}
 
 const router = express.Router();
 const gemini = new GeminiService();
 const vectorSearch = new VectorSearchService();
 
 // Send message to AI assistant
-router.post('/message', auth, async (req, res) => {
+router.post('/message', auth, async (req: AuthRequest, res) => {
   try {
     const { message, context } = req.body;
 
@@ -50,7 +58,7 @@ router.post('/message', auth, async (req, res) => {
 });
 
 // Get chat history
-router.get('/history', auth, async (req, res) => {
+router.get('/history', auth, async (req: AuthRequest, res) => {
   try {
     const { page = 1, limit = 50 } = req.query;
 
@@ -73,7 +81,7 @@ router.get('/history', auth, async (req, res) => {
 });
 
 // Clear chat history
-router.delete('/history', auth, async (req, res) => {
+router.delete('/history', auth, async (req: AuthRequest, res) => {
   try {
     await ChatMessage.deleteMany({ userId: req.user!.userId });
     res.json({ message: 'Chat history cleared' });

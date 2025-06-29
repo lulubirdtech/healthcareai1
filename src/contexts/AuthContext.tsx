@@ -87,7 +87,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   );
 };
 
-// Export the hook separately to avoid the fast refresh warning
 export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {

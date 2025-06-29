@@ -1,14 +1,22 @@
 import express from 'express';
-import { auth } from '../middleware/auth';
-import { GeminiService } from '../services/geminiService';
-import { Report } from '../models/Report';
-import { Analysis } from '../models/Analysis';
+import { auth } from '../middleware/auth.js';
+import { GeminiService } from '../services/geminiService.js';
+import { Report } from '../models/Report.js';
+import { Analysis } from '../models/Analysis.js';
+
+interface AuthRequest extends express.Request {
+  user?: {
+    userId: string;
+    email: string;
+    role: string;
+  };
+}
 
 const router = express.Router();
 const gemini = new GeminiService();
 
 // Generate report from analysis
-router.post('/generate', auth, async (req, res) => {
+router.post('/generate', auth, async (req: AuthRequest, res) => {
   try {
     const { analysisId, template = 'standard' } = req.body;
 
@@ -26,14 +34,15 @@ router.post('/generate', auth, async (req, res) => {
     }
 
     // Generate report using Gemini
-    const reportContent = await gemini.generateReport(analysis.toObject(), template);
+    const reportContent = await gemini.generateReport(analysis.toObject() as Record<string, unknown>, template);
 
     // Create report record
+    const dicomFileData = analysis.dicomFileId as Record<string, unknown>;
     const report = new Report({
       analysisId,
       userId: req.user!.userId,
-      patientId: (analysis.dicomFileId as Record<string, unknown>).patientId as string || 'Unknown',
-      title: `${(analysis.dicomFileId as Record<string, unknown>).modality as string || 'Medical'} Analysis Report`,
+      patientId: dicomFileData.patientId as string || 'Unknown',
+      title: `${dicomFileData.modality as string || 'Medical'} Analysis Report`,
       content: reportContent,
       template,
       status: 'draft',
@@ -68,7 +77,7 @@ router.get('/:reportId', auth, async (req, res) => {
 });
 
 // Update report
-router.put('/:reportId', auth, async (req, res) => {
+router.put('/:reportId', auth, async (req: AuthRequest, res) => {
   try {
     const { content, status } = req.body;
 
@@ -95,7 +104,7 @@ router.put('/:reportId', auth, async (req, res) => {
 });
 
 // List reports
-router.get('/', auth, async (req, res) => {
+router.get('/', auth, async (req: AuthRequest, res) => {
   try {
     const { page = 1, limit = 10, status, patientId } = req.query;
     
@@ -133,3 +142,5 @@ router.get('/', auth, async (req, res) => {
     res.status(500).json({ message: 'Internal server error' });
   }
 });
+
+export { router as reportsRoutes };

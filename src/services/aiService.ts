@@ -1,6 +1,15 @@
 class AIService {
   private getApiKey(provider: 'gemini' | 'openai'): string | null {
-    return localStorage.getItem(`${provider}_api_key`);
+    // First check localStorage (user settings)
+    const localKey = localStorage.getItem(`${provider}_api_key`);
+    if (localKey) return localKey;
+    
+    // Then check environment variables
+    if (provider === 'gemini') {
+      return import.meta.env.VITE_GEMINI_API_KEY || null;
+    } else {
+      return import.meta.env.VITE_OPENAI_API_KEY || null;
+    }
   }
 
   private async callGeminiAPI(prompt: string): Promise<string> {
@@ -231,7 +240,7 @@ Format as JSON:
     }
   }
 
-  private parseTextResponse(_text: string): Record<string, unknown> {
+  private parseTextResponse(text: string): Record<string, unknown> {
     // Fallback parser for non-JSON responses
     return {
       condition: "AI-Generated Diagnosis",

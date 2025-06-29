@@ -1,12 +1,20 @@
 import express from 'express';
-import { auth } from '../middleware/auth';
-import { Analysis } from '../models/Analysis';
-import { DicomFile } from '../models/DicomFile';
+import { auth } from '../middleware/auth.js';
+import { Analysis } from '../models/Analysis.js';
+import { DicomFile } from '../models/DicomFile.js';
+
+interface AuthRequest extends express.Request {
+  user?: {
+    userId: string;
+    email: string;
+    role: string;
+  };
+}
 
 const router = express.Router();
 
 // Start analysis endpoint
-router.post('/analyze', auth, async (req, res) => {
+router.post('/analyze', auth, async (req: AuthRequest, res) => {
   try {
     const { dicomFileId, modelType = 'general', sensitivity = 'standard' } = req.body;
 
@@ -19,7 +27,7 @@ router.post('/analyze', auth, async (req, res) => {
     // Create analysis record
     const analysis = new Analysis({
       dicomFileId,
-      userId: req.user.userId,
+      userId: req.user!.userId,
       status: 'processing',
       modelType,
       sensitivity,
@@ -81,11 +89,11 @@ router.get('/:analysisId', auth, async (req, res) => {
 });
 
 // List user's analyses
-router.get('/', auth, async (req, res) => {
+router.get('/', auth, async (req: AuthRequest, res) => {
   try {
     const { page = 1, limit = 10, status } = req.query;
     
-    const filter: Record<string, unknown> = { userId: req.user.userId };
+    const filter: Record<string, unknown> = { userId: req.user!.userId };
     if (status) {
       filter.status = status;
     }

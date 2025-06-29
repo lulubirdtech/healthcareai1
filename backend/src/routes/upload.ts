@@ -1,9 +1,17 @@
 import express from 'express';
 import multer from 'multer';
-import { auth } from '../middleware/auth';
-import { CloudStorageService } from '../services/cloudStorageService';
-import { DicomService } from '../services/dicomService';
-import { DicomFile } from '../models/DicomFile';
+import { auth } from '../middleware/auth.js';
+import { CloudStorageService } from '../services/cloudStorageService.js';
+import { DicomService } from '../services/dicomService.js';
+import { DicomFile } from '../models/DicomFile.js';
+
+interface AuthRequest extends express.Request {
+  user?: {
+    userId: string;
+    email: string;
+    role: string;
+  };
+}
 
 const router = express.Router();
 const storage = multer.memoryStorage();
@@ -18,7 +26,7 @@ const cloudStorage = new CloudStorageService();
 const dicomService = new DicomService();
 
 // Upload DICOM or medical images
-router.post('/', auth, upload.array('files', 10), async (req, res) => {
+router.post('/', auth, upload.array('files', 10), async (req: AuthRequest, res) => {
   try {
     const files = req.files as Express.Multer.File[] | undefined;
     if (!files || files.length === 0) {
@@ -45,11 +53,11 @@ router.post('/', auth, upload.array('files', 10), async (req, res) => {
           mimeType: file.mimetype,
           gcsPath,
           uploadedBy: req.user!.userId,
-          patientId: (metadata.patientId as string) || undefined,
-          studyId: (metadata.studyId as string) || undefined,
-          seriesId: (metadata.seriesId as string) || undefined,
-          modality: (metadata.modality as string) || undefined,
-          bodyPart: (metadata.bodyPart as string) || undefined,
+          patientId: metadata.patientId as string || undefined,
+          studyId: metadata.studyId as string || undefined,
+          seriesId: metadata.seriesId as string || undefined,
+          modality: metadata.modality as string || undefined,
+          bodyPart: metadata.bodyPart as string || undefined,
           metadata,
           uploadDate: new Date()
         });
@@ -79,7 +87,7 @@ router.post('/', auth, upload.array('files', 10), async (req, res) => {
 });
 
 // Get uploaded files
-router.get('/', auth, async (req, res) => {
+router.get('/', auth, async (req: AuthRequest, res) => {
   try {
     const { page = 1, limit = 20, modality, patientId } = req.query;
     
